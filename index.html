@@ -1,0 +1,1989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RVM Master Panel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+  <style>
+    .container {
+      display: flex;
+      flex-direction: column; /* Stack items on mobile */
+      gap: 10px;
+    }
+    
+    @media(min-width: 768px) {
+      .container {
+        flex-direction: row; /* Side by side on tablets/desktop */
+      }
+    }
+    
+    img, video {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    body { 
+      margin:0; 
+      font-family:Arial,sans-serif; 
+      background:#f4f6fb; 
+    }
+    
+    .overlay { 
+      position:fixed; 
+      top:0; 
+      left:50%; 
+      transform:translateX(-50%);
+      width:100%; 
+      height:45%; 
+      background:rgba(44,62,117,0.95);
+      clip-path: ellipse(70% 100% at 50% 0%); 
+      z-index:-1;
+      display:flex; 
+      justify-content:center; 
+      align-items:center; 
+    }
+    
+    .overlay img { 
+      max-height:100%; 
+      max-width:100%; 
+      opacity:0.15; 
+    }
+    
+    .login-container { 
+      background:#fff; 
+      padding:40px; 
+      border-radius:8px; 
+      width:380px; 
+      box-shadow:0 4px 20px rgba(0,0,0,0.2); 
+      text-align:center; 
+      position:relative; 
+      z-index:1; 
+    }
+    
+    .login-container img { 
+      width:100px; 
+      margin-bottom:10px; 
+    }
+    
+    .login-container h2 { 
+      font-size:20px; 
+      margin:10px 0; 
+      color:#2c3e75; 
+    }
+    
+    .login-container p { 
+      font-size:14px; 
+      color:#666; 
+      margin-bottom:20px; 
+    }
+    
+    .login-container label { 
+      display:block; 
+      text-align:left; 
+      font-size:14px; 
+      margin-bottom:5px; 
+      color:#333; 
+    }
+    
+    .login-container input[type="text"], 
+    .login-container input[type="password"] { 
+      width:100%; 
+      padding:10px; 
+      border:1px solid #ddd; 
+      border-radius:5px; 
+      margin-bottom:15px; 
+      font-size:14px; 
+    }
+    
+    .remember-me { 
+      display:flex; 
+      align-items:center; 
+      margin-bottom:20px; 
+      font-size:14px; 
+      color:#444; 
+    }
+    
+    .remember-me input { 
+      margin-right:8px; 
+    }
+    
+    .login-container button { 
+      width:100%; 
+      padding:12px; 
+      border:none; 
+      border-radius:5px; 
+      background:#009688; 
+      color:white; 
+      font-size:16px; 
+      cursor:pointer; 
+    }
+    
+    .login-container button:hover { 
+      background:#00796b; 
+    }
+    
+    footer { 
+      text-align:center; 
+      font-size:13px; 
+    }
+    
+    .table-scroll { 
+      max-height:400px; 
+      overflow-y:auto; 
+    }
+    
+    #new-percel-modal .modal-content, 
+    #general-settings-modal .modal-content { 
+      max-height: 90vh; 
+      overflow-y: auto; 
+    }
+    
+    .help-card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      transition: all 0.3s;
+      cursor: pointer;
+      background: #f8f9fa;
+    }
+    
+    .help-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    
+    .help-card i {
+      font-size: 2rem;
+      margin-bottom: 10px;
+      color: #0d6efd;
+    }
+    
+    .hidden {
+      display: none;
+    }
+    
+    header, footer { 
+      text-align: center; 
+    }
+    
+    /* Add table scrolling for the table container */
+    .table-scroll {
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    #new-percel-modal .modal-content {
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    /* Dashboard cards */
+    .dashboard-card {
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      transition: all 0.3s;
+      background: white;
+    }
+    
+    .dashboard-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+    }
+    
+    .dashboard-card i {
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+    }
+    
+    /* Animation for modal */
+    @keyframes fadeInDown { 
+      from { 
+        opacity:0; 
+        transform: translateY(-20px);
+      } 
+      to {
+        opacity:1; 
+        transform: translateY(0);
+      } 
+    }
+    
+    .animate-fade-in-down { 
+      animation: fadeInDown 0.3s ease-out; 
+    }
+    
+    /* Updated Sidebar Colors */
+    aside {
+      background-color: rgb(48, 72, 156) !important; /* RVM Blue */
+      overflow-y: auto; /* Enable vertical scrolling */
+      height: 100vh; /* Full height */
+    }
+
+    /* Sidebar scrollbar styling */
+    aside::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    aside::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    aside::-webkit-scrollbar-thumb {
+      background: rgba(11, 151, 104, 0.7);
+      border-radius: 4px;
+    }
+
+    aside::-webkit-scrollbar-thumb:hover {
+      background: rgba(11, 151, 104, 1);
+    }
+
+    /* Sidebar hover effects */
+    aside li:hover {
+      background-color: rgba(11, 151, 104, 0.7) !important; /* RVM Green with transparency */
+    }
+
+    /* Active sidebar item */
+    aside li.active {
+      background-color: rgb(11, 151, 104) !important; /* RVM Green */
+    }
+
+    /* Button color classes */
+    .btn-primary {
+      background-color: rgb(48, 72, 156) !important; /* RVM Blue */
+      border-color: rgb(48, 72, 156) !important;
+    }
+
+    .btn-danger {
+      background-color: #dc3545 !important; /* Standard red */
+      border-color: #dc3545 !important;
+    }
+
+    /* Button with icons */
+    .btn-with-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* Dark mode styles */
+    body.dark {
+      background-color: #1e40af;
+      color: #f3f4f6;
+    }
+    
+    body.dark .login-container {
+      background-color: #374151;
+      color: #f3f4f6;
+    }
+    
+    body.dark .login-container label,
+    body.dark .login-container p {
+      color: #f3f4f6;
+    }
+    
+    body.dark .login-container input {
+      background-color: #4b5563;
+      color: #f3f4f6;
+      border-color: #6b7280;
+    }
+    
+    body.dark aside {
+      background-color: rgb(48, 72, 156) !important; /* Keep RVM Blue in dark mode */
+    }
+    
+    body.dark .navbar {
+      background-color: #1f2937;
+      color: #f3f4f6;
+    }
+    
+    body.dark .bg-white {
+      background-color: #374151 !important;
+      color: #f3f4f6;
+    }
+    
+    body.dark .dashboard-card {
+      background-color: #4b5563;
+      color: #f3f4f6;
+    }
+    
+    body.dark .help-card {
+      background-color: #4b5563;
+      color: #f3f4f6;
+      border-color: #6b7280;
+    }
+    
+    body.dark .table-scroll {
+      background-color: #374151;
+      color: #f3f4f6;
+    }
+    
+    body.dark table {
+      border-color: #6b7280;
+    }
+    
+    body.dark th {
+      background-color: #1e40af !important;
+    }
+    
+    body.dark td {
+      border-color: #6b7280;
+    }
+    
+    body.dark input, 
+    body.dark select {
+      background-color: #4b5563;
+      color: #f3f4f6;
+      border-color: #6b7280;
+    }
+    
+    .logo {
+      display: block;
+      margin: 0 auto;   /* centers horizontally */
+      max-width: 150px; /* adjust size */
+      height: auto;
+    }
+    
+    /* Profile dropdown styles */
+    .profile-dropdown {
+      position: relative;
+      display: inline-block;
+    }
+    
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background-color: #f9f9f9;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1000;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    
+    .dropdown-content a {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      text-align: left;
+    }
+    
+    .dropdown-content a:hover {
+      background-color: #f1f1f1;
+    }
+    
+    .show {
+      display: block;
+    }
+    
+    body.dark .dropdown-content {
+      background-color: #374151;
+      color: #f3f4f6;
+    }
+    
+    body.dark .dropdown-content a {
+      color: #f3f4f6;
+    }
+    
+    body.dark .dropdown-content a:hover {
+      background-color: #4b5563;
+    }
+    
+    /* Status badges */
+    .status-delivered { background-color: #10B981; color: white; }
+    .status-transit { background-color: #F59E0B; color: white; }
+    .status-cancelled { background-color: #EF4444; color: white; }
+    .status-pending { background-color: #6B7280; color: white; }
+    .status-open { background-color: #3B82F6; color: white; }
+    .status-progress { background-color: #F59E0B; color: white; }
+    .status-resolved { background-color: #10B981; color: white; }
+    .status-closed { background-color: #6B7280; color: white; }
+    
+  </style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="login-page" class="flex flex-col items-center justify-center h-screen w-full relative">
+  <div class="overlay"><img src="doctor.png" alt="Doctor"></div>
+  <div class="login-container">
+    <div style="text-align: center;">
+      <img src="RVM.png" alt="RVM Logo" class="logo">
+    </div>
+    <h2>Welcome To RVM Master Panel!</h2>
+    <p>Sign in to continue to RVM ERP.</p>
+    <form id="loginForm">
+      <label for="email">Email/CRN <span style="color:red">*</span></label>
+      <input type="text" id="email" placeholder="Enter Email/CRN" required>
+      <label for="password">Password <span style="color:red">*</span></label>
+      <input type="password" id="password" placeholder="Enter password" required>
+      <div class="remember-me">
+        <input type="checkbox" id="remember">
+        <label for="remember">Remember me</label>
+      </div>
+      <button type="submit">Sign In</button>
+    </form>
+  </div>
+  <footer>© 2025 RVM HSM Design & Developed By Peramsons Software</footer>
+</div>
+
+<!-- MAIN WRAPPER (SIDEBAR + CONTENT) -->
+<div id="main-wrapper" class="hidden flex h-screen">
+  <!-- SIDEBAR -->
+  <aside class="w-64 text-white flex flex-col">
+    <div class="p-4 sticky top-0 bg-rvm-blue z-10">
+      <h1 class="text-xl font-bold text-center">RVM</h1>
+    </div>
+    <div class="flex-1 overflow-y-auto">
+      <ul class="space-y-2 p-4">
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-bullhorn mr-3"></i>Campaigns</li>
+        <li class="mt-4 text-xs uppercase font-semibold text-gray-300">Vendor</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-user mr-3"></i>Vendor</li>
+        <li class="mt-4 text-xs uppercase font-semibold text-gray-300">MRD</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-file-medical mr-3"></i>MRD</li>
+        <li class="mt-4 text-xs uppercase font-semibold text-gray-300">Finance & Accounts</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-tachometer-alt mr-3"></i>Dashboard</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-file-invoice mr-3"></i>Invoices</li>
+        <li class="mt-4 text-xs uppercase font-semibold text-gray-300">Help Desk</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-calendar-check mr-3"></i>Appointments</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-tasks mr-3"></i>Follow Up's</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-headset mr-3"></i>Service Desk</li>
+        <li class="mt-4 text-xs uppercase font-semibold text-gray-300">Settings</li>
+        <li id="settingsBtn" class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer">
+          <i class="fas fa-cog mr-3"></i> General Settings
+        </li>
+        <!-- Additional menu items to demonstrate scrolling -->
+        <li class="mt-4 text-xs uppercase font-semibold text-gray-300">Additional Features</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-user-injured mr-3"></i>Patient Records</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-procedures mr-3"></i>Room Management</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-pills mr-3"></i>Pharmacy</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-flask mr-3"></i>Laboratory</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-x-ray mr-3"></i>Radiology</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-ambulance mr-3"></i>Emergency</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-user-nurse mr-3"></i>Nursing Station</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-file-prescription mr-3"></i>Prescriptions</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-chart-line mr-3"></i>Reports</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-users mr-3"></i>Staff Management</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-calculator mr-3"></i>Billing</li>
+        <li class="flex items-center p-3 rounded-lg hover:bg-gray-800 cursor-pointer"><i class="fas fa-box mr-3"></i>Inventory</li>
+      </ul>
+    </div>
+    <div class="p-4 text-sm border-t border-gray-700 sticky bottom-0 bg-rvm-blue">
+      <p>V.1.10-PULSE</p>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content flex-1 flex flex-col">
+    <!-- Header -->
+    <header class="navbar flex items-center justify-between p-3 bg-white shadow-sm sticky top-0 z-50">
+      <!-- Left side -->
+      <div class="navbar-left flex items-center space-x-3">
+        <i class="fas fa-bars cursor-pointer text-gray-600 text-xl"></i>
+        <div class="search-box relative">
+          <input id="globalSearch" type="text" placeholder="Search..." class="pl-8 pr-3 py-1 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+          <i class="fas fa-search absolute left-2 top-1/2 -translate-y-1/2 text-gray-400"></i>
+        </div>
+      </div>
+
+      <!-- Right side -->
+      <div class="navbar-right flex items-center space-x-4">
+        <div class="icon-btn cursor-pointer p-2 rounded hover:bg-gray-100" onclick="toggleFullscreen()">
+          <i class="fas fa-expand text-gray-600"></i>
+        </div>
+        <div class="icon-btn cursor-pointer p-2 rounded hover:bg-gray-100" onclick="toggleDarkMode()">
+          <i class="fas fa-moon text-gray-600"></i>
+        </div>
+        <div class="icon-btn relative cursor-pointer p-2 rounded hover:bg-gray-100" onclick="alert('You have 3 notifications!')">
+          <i class="fas fa-bell text-gray-600"></i>
+          <span class="badge absolute top-0 right-0 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+        </div>
+        <div class="profile-dropdown">
+          <div class="profile flex items-center space-x-2 cursor-pointer" onclick="toggleProfileDropdown()">
+            <img src="RVM.png" alt="RVM Logo" class="rounded-full w-10 h-10"/>
+            <div class="profile-text text-sm">
+              <strong>R.V.M Hospitals</strong>
+              <span class="block text-gray-500 text-xs">Master Panel</span>
+            </div>
+            <i class="fas fa-chevron-down text-xs ml-1"></i>
+          </div>
+          <div id="profileDropdown" class="dropdown-content">
+            <a href="#" onclick="alert('Profile settings clicked!')"><i class="fas fa-user-cog mr-2"></i> Profile Settings</a>
+            <a href="#" onclick="logout()"><i class="fas fa-sign-out-alt mr-2"></i> Logout</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <hr>
+    <header class="bg-white shadow-sm h-11">
+      <!-- Main content area -->
+      <div class="p-3 flex-grow overflow-auto">
+        <div class="flex justify-between items-center mb-6">
+          <h2 class="font-bold text-gray-800">SERVICE DESK</h2>
+          <div class="text-sm text-black">
+            <span id="breadcrumbDashboard" class="cursor-pointer text-blue-600 hover:underline">Dashboard</span> >
+            <span id="breadcrumbSettings" class="cursor-pointer text-blue-600 hover:underline">Settings</span> >
+            <span class="font-semibold text-gray-600">Service Desk</span>
+          </div>
+        </div>
+      </div>
+    </header>
+    <br>
+
+    <!-- DASHBOARD PLACEHOLDER -->
+    <div id="dashboard-page" class="hidden p-6">
+      <h2 class="text-2xl font-bold mb-6">Dashboard Overview</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="dashboard-card">
+          <i class="fas fa-users text-blue-500"></i>
+          <h3 class="text-lg font-semibold">Total Users</h3>
+          <p class="text-3xl font-bold">245</p>
+        </div>
+        <div class="dashboard-card">
+          <i class="fas fa-box text-green-500"></i>
+          <h3 class="text-lg font-semibold">Parcels Today</h3>
+          <p class="text-3xl font-bold">42</p>
+        </div>
+        <div class="dashboard-card">
+          <i class="fas fa-check-circle text-yellow-500"></i>
+          <h3 class="text-lg font-semibold">Completed</h3>
+          <p class="text-3xl font-bold">38</p>
+        </div>
+        <div class="dashboard-card">
+          <i class="fas fa-clock text-red-500"></i>
+          <h3 class="text-lg font-semibold">Pending</h3>
+          <p class="text-3xl font-bold">4</p>
+        </div>
+      </div>
+      
+      <div class="bg-white p-6 rounded-lg shadow mb-6">
+        <h3 class="text-xl font-semibold mb-4">Recent Activity</h3>
+        <div class="space-y-4">
+          <div class="flex items-center justify-between border-b pb-3">
+            <div class="flex items-center">
+              <div class="bg-blue-100 p-2 rounded-full mr-3">
+                <i class="fas fa-box text-blue-500"></i>
+              </div>
+              <div>
+                <p class="font-medium">New parcel received</p>
+                <p class="text-sm text-gray-500">Medical Supplies from Raja Shaker</p>
+              </div>
+            </div>
+            <span class="text-sm text-gray-500">2 hours ago</span>
+          </div>
+          <div class="flex items-center justify-between border-b pb-3">
+            <div class="flex items-center">
+              <div class="bg-green-100 p-2 rounded-full mr-3">
+                <i class="fas fa-check-circle text-green-500"></i>
+              </div>
+              <div>
+                <p class="font-medium">Parcel delivered</p>
+                <p class="text-sm text-gray-500">Patient Documents to John Smith</p>
+              </div>
+            </div>
+            <span class="text-sm text-gray-500">5 hours ago</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <div class="bg-yellow-100 p-2 rounded-full mr-3">
+                <i class="fas fa-exclamation-circle text-yellow-500"></i>
+              </div>
+              <div>
+                <p class="font-medium">Parcel delayed</p>
+                <p class="text-sm text-gray-500">Lab Equipment from Sarah Johnson</p>
+              </div>
+            </div>
+            <span class="text-sm text-gray-500">Yesterday</span>
+          </div>
+        </div>
+      </div>
+      <footer class="bg-white p-4 text-xs text-gray-500 text-center">
+        © 2025 R.V.M Hospitals | Developed by Peramsons Software
+      </footer>
+    </div>
+    
+    <!-- SETTINGS PAGE -->
+    <div id="settings-page" class="hidden p-6">
+      <h3 class="text-xl font-semibold mb-6">Help Desk Dashboard</h3>
+      <div class="grid grid-cols-2 md:grid-cols-4">
+        <div id="purposeVisitBtn" class="help-card">
+          <i class="fas fa-truck"></i>
+          <p>Purpose Of Visit</p>
+        </div>
+        <div id="parcelTypeBtn" class="help-card">
+          <i class="fas fa-box"></i>
+          <p>Parcel Type</p>
+        </div>
+        <div id="grievanceBtn" class="help-card">
+          <i class="fas fa-user-md"></i>
+          <p>Grievance</p>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="mt-8 text-center text-gray-500 text-sm border-t pt-4">
+        © 2025 R.V.M Hospitals | Developed by Peramsons Software
+      </footer>
+    </div>
+
+    <!-- VISITOR MODULE PAGE -->
+    <div id="visitor-page" class="hidden flex flex-col flex-1 overflow-y: auto;">
+      <!-- Actions -->
+      <div class="p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex gap-2">
+          <button id="createVisitorBtn" class="btn btn-primary text-white px-3 py-2 rounded btn-with-icon">
+            <i class="fas fa-user-plus"></i> Create Visitor
+          </button>
+          <button id="importVisitorBtn" class="bg-green-600 text-white px-3 py-2 rounded btn-with-icon">
+            <i class="fas fa-file-import"></i> Import
+          </button>
+          <button id="exportVisitorBtn" class="bg-blue-600 text-white px-3 py-2 rounded btn-with-icon">
+            <i class="fas fa-file-export"></i> Export
+          </button>
+          <button id="visitorInfoBtn" class="bg-purple-600 text-white px-3 py-2 rounded btn-with-icon">
+            <i class="fas fa-info-circle"></i> Visitor Information
+          </button>
+        </div>
+        <input type="text" id="searchVisitorInput" placeholder="Search..." class="border p-2 rounded w-full md:w-64"/>
+        <input type="file" id="importVisitorFile" class="hidden"/>
+      </div>
+
+      <!-- Table -->
+      <div class="table-scroll bg-white p-4 rounded shadow m-4 flex-1">
+        <table id="visitorTable" class="min-w-full border border-gray-200 rounded">
+          <thead>
+            <tr class="bg-blue-900 text-white">
+              <th class="py-2 px-3">S.No</th>
+              <th class="py-2 px-3">Purpose</th>
+              <th class="py-2 px-3">Name</th>
+              <th class="py-2 px-3">Phone</th>
+              <th class="py-2 px-3">Date</th>
+              <th class="py-2 px-3">Status</th>
+              <th class="py-2 px-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="visitorBody">
+            <!-- Table rows will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination -->
+      <div class="flex justify-center mt-4 space-x-2" id="visitorPaginationContainer">
+        <button id="prevVisitorPage" class="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Previous</button>
+        <span id="visitorPageNumbers" class="flex space-x-1"></span>
+        <button id="nextVisitorPage" class="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Next</button>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-white p-4 text-xs text-gray-500 text-center">
+        © 2025 R.V.M Hospitals | Developed by Peramsons Software
+      </footer>
+    </div>
+
+    <!-- PARCEL MODULE PAGE -->
+    <div id="parcel-page" class="hidden flex flex-col flex-1">
+      <!-- Actions -->
+      <div class="p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex gap-2">
+          <button id="createParcelBtn" class="btn btn-primary text-white px-3 py-2 rounded btn-with-icon">
+            <i class="fas fa-plus-circle"></i> Create Parcel
+          </button>
+          <button id="importParcelBtn" class="bg-green-600 text-white px-3 py-2 rounded btn-with-icon">
+            <i class="fas fa-file-import"></i> Import
+          </button>
+          <button id="exportParcelBtn" class="bg-blue-600 text-white px-3 py-2 rounded btn-with-icon">
+            <i class="fas fa-file-export"></i> Export
+          </button>
+        </div>
+        <input type="text" id="searchParcelInput" placeholder="Search..." class="border p-2 rounded w-full md:w-64"/>
+        <input type="file" id="importParcelFile" class="hidden"/>
+      </div>
+
+      <!-- Table -->
+      <div class="table-scroll bg-white p-4 rounded shadow m-4 flex-1">
+        <table id="parcelTable" class="min-w-full border border-gray-200 rounded">
+          <thead>
+            <tr class="bg-blue-900 text-white">
+              <th class="py-2 px-3">S.No</th>
+              <th class="py-2 px-3">Parcel Title</th>
+              <th class="py-2 px-3">Category</th>
+              <th class="py-2 px-3">Type</th>
+              <th class="py-2 px-3">Sender/Receiver</th>
+              <th class="py-2 px-3">Contact</th>
+              <th class="py-2 px-3">Date</th>
+              <th class="py-2 px-3">Status</th>
+              <th class="py-2 px-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="parcelBody">
+            <!-- Table rows will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination -->
+      <div class="flex justify-center mt-4 space-x-2" id="parcelPaginationContainer">
+        <button id="prevParcelPage" class="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Previous</button>
+        <span id="parcelPageNumbers" class="flex space-x-1"></span>
+        <button id="nextParcelPage" class="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Next</button>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-white p-4 text-xs text-gray-500 text-center">
+        © 2025 R.V.M Hospitals | Developed by Peramsons Software
+      </footer>
+    </div>
+
+    <!-- GRIEVANCE MODULE PAGE -->
+    <div id="grievance-page" class="hidden flex flex-col flex-1">
+      <!-- Actions -->
+      <div class="p-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="flex gap-2">
+          <button id="createGrievanceBtn" class="btn btn-primary text-white px-3 py-2 rounded btn-with-icon">
+            <i class="fas fa-flag"></i> Create Grievance
+          </button>
+          <button id="importGrievanceBtn" class="bg-green-600 text-white px-3 py-2 rounded btn-with-icon">
+            <i class="fas fa-file-import"></i> Import
+          </button>
+          <button id="exportGrievanceBtn" class="bg-blue-600 text-white px-3 py-2 rounded btn-with-icon">
+            <i class="fas fa-file-export"></i> Export
+          </button>
+        </div>
+        <input type="text" id="searchGrievanceInput" placeholder="Search..." class="border p-2 rounded w-full md:w-64"/>
+        <input type="file" id="importGrievanceFile" class="hidden"/>
+      </div>
+
+      <!-- Table -->
+      <div class="table-scroll bg-white p-4 rounded shadow m-4 flex-1 overflow-y: auto;">
+        <table id="grievanceTable" class="min-w-full border border-gray-200 rounded">
+          <thead>
+            <tr class="bg-blue-900 text-white">
+              <th class="py-2 px-3">S.No</th>
+              <th class="py-2 px-3">Grievance Title</th>
+              <th class="py-2 px-3">Category</th>
+              <th class="py-2 px-3">Type</th>
+              <th class="py-2 px-3">Raised By</th>
+              <th class="py-2 px-3">Date</th>
+              <th class="py-2 px-3">Status</th>
+              <th class="py-2 px-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="grievanceBody">
+            <!-- Table rows will be populated by JavaScript -->
+          </tbody>
+        </table>
+      </div>
+      
+      <!-- Pagination -->
+      <div class="flex justify-center mt-4 space-x-2" id="grievancePaginationContainer">
+        <button id="prevGrievancePage" class="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Previous</button>
+        <span id="grievancePageNumbers" class="flex space-x-1"></span>
+        <button id="nextGrievancePage" class="bg-gray-300 px-3 py-1 rounded hover:bg-gray-400">Next</button>
+      </div>
+
+      <!-- Footer -->
+      <footer class="bg-white p-4 text-xs text-gray-500 text-center">
+        © 2025 R.V.M Hospitals | Developed by Peramsons Software
+      </footer>
+    </div>
+  </div>
+</div>
+
+<!-- CREATE VISITOR MODAL -->
+<div id="new-visitor-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+  <div class="modal-content bg-white rounded-lg shadow-xl overflow-hidden animate-fade-in-down w-full max-w-2xl">
+    <div class="flex items-center justify-between p-4 bg-[#1e3a8a] text-white">
+      <h3 class="text-lg font-semibold">Create Visitor</h3>
+      <button id="close-visitor-modal-btn" class="text-white text-2xl focus:outline-none hover:text-gray-200">&times;</button>
+    </div>
+    <form id="visitorForm" class="p-6 grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium">Purpose of Visit <span class="text-red-500">*</span></label>
+        <input type="text" id="modalPurpose" class="w-full border p-2 rounded" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Visitor Name <span class="text-red-500">*</span></label>
+        <input type="text" id="modalName" class="w-full border p-2 rounded" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Phone Number <span class="text-red-500">*</span></label>
+        <input type="text" id="modalPhone" class="w-full border p-2 rounded" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Visitor ID Number <span class="text-red-500">*</span></label>
+        <input type="text" id="modalIdNumber" class="w-full border p-2 rounded" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Visitor ID Attachment <span class="text-red-500">*</span></label>
+        <input type="file" id="modalIdAttachment" class="w-full border p-2 rounded" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Number of Visitors <span class="text-red-500">*</span></label>
+        <input type="number" id="modalVisitorCount" class="w-full border p-2 rounded" required>
+      </div>
+      <div class="col-span-2 flex justify-end space-x-2">
+        <button type="submit" class="btn btn-primary text-white px-4 py-2 rounded btn-with-icon">
+          <i class="fas fa-user-plus"></i> Create
+        </button>
+        <button type="button" id="cancelVisitorModal" class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- CREATE PARCEL MODAL -->
+<div id="new-percel-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+  <div class="modal-content bg-white rounded-lg shadow-xl overflow-hidden animate-fade-in-down w-full max-w-2xl">
+    <div class="flex items-center justify-between p-4 bg-[#1e3a8a] text-white">
+      <h3 class="text-lg font-semibold">Create Parcel</h3>
+      <button id="close-parcel-modal-btn" class="text-white text-2xl focus:outline-none hover:text-gray-200">&times;</button>
+    </div>
+    <form id="parcelForm" class="p-6 grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium">Parcel Title <span class="text-red-500">*</span></label>
+        <input type="text" id="modalParcelTitle" class="w-full border p-2 rounded" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Parcel Category <span class="text-red-500">*</span></label>
+        <select id="modalParcelCategory" class="w-full border p-2 rounded" required>
+          <option value="">Select parcel category</option>
+          <option>Food</option>
+          <option>Cloths</option>
+          <option>Medicine</option>
+          <option>Documents</option>
+          <option>Electronics</option>
+          <option>Medical</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Parcel Type <span class="text-red-500">*</span></label>
+        <select id="modalParcelType" class="w-full border p-2 rounded" required>
+          <option value="">Select Type</option>
+          <option>Sending</option>
+          <option>Receiving</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Sender/Receiver Name <span class="text-red-500">*</span></label>
+        <input type="text" id="modalSenderReceiver" class="w-full border p-2 rounded" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Phone No <span class="text-red-500">*</span></label>
+        <input type="text" id="modalParcelPhone" class="w-full border p-2 rounded" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Date <span class="text-red-500">*</span></label>
+        <input type="date" id="modalParcelDate" class="w-full border p-2 rounded" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Status <span class="text-red-500">*</span></label>
+        <select id="modalParcelStatus" class="w-full border p-2 rounded" required>
+          <option value="">Select Status</option>
+          <option>Delivered</option>
+          <option>In Transit</option>
+          <option>Cancelled</option>
+          <option>Pending</option>
+        </select>
+      </div>
+      <div class="col-span-2 flex justify-end space-x-2">
+        <button type="submit" class="btn btn-primary text-white px-4 py-2 rounded btn-with-icon">
+          <i class="fas fa-plus-circle"></i> Create
+        </button>
+        <button type="button" id="cancelParcelModal" class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- CREATE GRIEVANCE MODAL -->
+<div id="new-grievance-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center p-4 z-50">
+  <div class="modal-content bg-white rounded-lg shadow-xl overflow-hidden animate-fade-in-down w-full max-w-2xl">
+    <div class="flex items-center justify-between p-4 bg-[#1e3a8a] text-white">
+      <h3 class="text-lg font-semibold">Create Grievance</h3>
+      <button id="close-grievance-modal-btn" class="text-white text-2xl focus:outline-none hover:text-gray-200">&times;</button>
+    </div>
+    <form id="grievanceForm" class="p-6 grid grid-cols-2 gap-4">
+      <div>
+        <label class="block text-sm font-medium">Grievance Title <span class="text-red-500">*</span></label>
+        <input type="text" id="modalGrievanceTitle" class="w-full border p-2 rounded" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Category <span class="text-red-500">*</span></label>
+        <select id="modalGrievanceCategory" class="w-full border p-2 rounded" required>
+          <option value="">Select category</option>
+          <option>Food Quality</option>
+          <option>Staff Behavior</option>
+          <option>Medicine Delay</option>
+          <option>Facilities</option>
+          <option>Appointment Issues</option>
+          <option>Billing Issues</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Type <span class="text-red-500">*</span></label>
+        <select id="modalGrievanceType" class="w-full border p-2 rounded" required>
+          <option value="">Select Type</option>
+          <option>Complaint</option>
+          <option>Suggestion</option>
+          <option>Feedback</option>
+          <option>Appreciation</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Raised By <span class="text-red-500">*</span></label>
+        <input type="text" id="modalRaisedBy" class="w-full border p-2 rounded" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Contact No</label>
+        <input type="text" id="modalGrievanceContact" class="w-full border p-2 rounded">
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Date <span class="text-red-500">*</span></label>
+        <input type="date" id="modalGrievanceDate" class="w-full border p-2 rounded" required>
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Status <span class="text-red-500">*</span></label>
+        <select id="modalGrievanceStatus" class="w-full border p-2 rounded" required>
+          <option value="">Select Status</option>
+          <option>Open</option>
+          <option>In Progress</option>
+          <option>Resolved</option>
+          <option>Closed</option>
+        </select>
+      </div>
+      <div class="col-span-2">
+        <label class="block text-sm font-medium">Description</label>
+        <textarea id="modalGrievanceDescription" class="w-full border p-2 rounded" rows="3"></textarea>
+      </div>
+      <div class="col-span-2 flex justify-end space-x-2">
+        <button type="submit" class="btn btn-primary text-white px-4 py-2 rounded btn-with-icon">
+          <i class="fas fa-flag"></i> Create
+        </button>
+        <button type="button" id="cancelGrievanceModal" class="bg-gray-400 text-white px-4 py-2 rounded">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // ===================  DATA STORAGE ===================
+  // Function to save data to localStorage
+  function saveVisitorData(data) {
+    localStorage.setItem('visitorData', JSON.stringify(data));
+  }
+
+  // Function to load data from localStorage
+  function loadVisitorData() {
+    const data = localStorage.getItem('visitorData');
+    return data ? JSON.parse(data) : [];
+  }
+  
+  // Function to save parcel data to localStorage
+  function saveParcelData(data) {
+    localStorage.setItem('parcelData', JSON.stringify(data));
+  }
+
+  // Function to load parcel data from localStorage
+  function loadParcelData() {
+    const data = localStorage.getItem('parcelData');
+    return data ? JSON.parse(data) : [];
+  }
+
+  // Function to save grievance data to localStorage
+  function saveGrievanceData(data) {
+    localStorage.setItem('grievanceData', JSON.stringify(data));
+  }
+
+  // Function to load grievance data from localStorage
+  function loadGrievanceData() {
+    const data = localStorage.getItem('grievanceData');
+    return data ? JSON.parse(data) : [];
+  }
+  
+  // Initialize visitor data
+  let visitorData = loadVisitorData();
+  let lastVisitor = null;
+
+  // Initialize parcel data
+  let parcelData = loadParcelData();
+
+  // Initialize grievance data
+  let grievanceData = loadGrievanceData();
+  
+  // If no visitor data exists, add sample data
+  if (visitorData.length === 0) {
+    visitorData = [
+      { id: 1, purpose: "Medical Consultation", name: "John Smith", phone: "6302898765", idNumber: "ID12345", idAttachment: "id_proof.jpg", visitorCount: 1, date: "2023-05-20", status: "Active" },
+      { id: 2, purpose: "Patient Visit", name: "Sarah Johnson", phone: "6302876543", idNumber: "ID67890", idAttachment: "id_card.png", visitorCount: 2, date: "2023-05-19", status: "Inactive" },
+      { id: 3, purpose: "Delivery", name: "Mike Williams", phone: "6302812345", idNumber: "ID54321", idAttachment: "license.jpg", visitorCount: 1, date: "2023-05-18", status: "Active" },
+      { id: 4, purpose: "Meeting", name: "Priya Kumar", phone: "6302891234", idNumber: "ID09876", idAttachment: "employee_id.png", visitorCount: 3, date: "2023-05-17", status: "Inactive" }
+    ];
+    saveVisitorData(visitorData);
+  }
+
+  // If no parcel data exists, add sample data
+  if (parcelData.length === 0) {
+    parcelData = [
+      { id: 1, title: "Medical Supplies", category: "Medicine", type: "Receiving", sender: "Raja Shaker", contact: "6302898765", date: "2023-05-20", status: "Delivered" },
+      { id: 2, title: "Patient Documents", category: "Documents", type: "Sending", sender: "John Smith", contact: "6302876543", date: "2023-05-19", status: "In Transit" },
+      { id: 3, title: "Lab Equipment", category: "Electronics", type: "Receiving", sender: "Sarah Johnson", contact: "6302812345", date: "2023-05-18", status: "Cancelled" },
+      { id: 4, title: "X-Ray Films", category: "Medical", type: "Sending", sender: "Priya Kumar", contact: "6302891234", date: "2023-05-17", status: "Delivered" }
+    ];
+    saveParcelData(parcelData);
+  }
+
+  // If no grievance data exists, add sample data
+  if (grievanceData.length === 0) {
+    grievanceData = [
+      { id: 1, title: "Food Quality Issue", category: "Food Quality", type: "Complaint", raisedBy: "Patient", contact: "9876543210", date: "2023-05-20", status: "Open", description: "Food was cold and tasteless" },
+      { id: 2, title: "Rude Staff Behavior", category: "Staff Behavior", type: "Complaint", raisedBy: "Visitor", contact: "8765432109", date: "2023-05-19", status: "In Progress", description: "Security guard was very rude" },
+      { id: 3, title: "Cleanliness Suggestion", category: "Facilities", type: "Suggestion", raisedBy: "Staff", contact: "7654321098", date: "2023-05-18", status: "Resolved", description: "Please improve cleaning in waiting area" },
+      { id: 4, title: "Excellent Service", category: "Staff Behavior", type: "Appreciation", raisedBy: "Patient", contact: "6543210987", date: "2023-05-17", status: "Closed", description: "Nursing staff was very helpful and caring" }
+    ];
+    saveGrievanceData(grievanceData);
+  }
+
+  // ===================  LOGIN ===================
+  document.getElementById("loginForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    document.getElementById("login-page").classList.add("hidden");
+    document.getElementById("main-wrapper").classList.remove("hidden");
+    document.getElementById("dashboard-page").classList.remove("hidden");
+  });
+
+  // ===================  NAVIGATION ===================
+  const dashboardPage = document.getElementById("dashboard-page");
+  const settingsPage = document.getElementById("settings-page");
+  const visitorPage = document.getElementById("visitor-page");
+  const parcelPage = document.getElementById("parcel-page");
+  const grievancePage = document.getElementById("grievance-page");
+
+  document.getElementById("settingsBtn").onclick = () => {
+    dashboardPage.classList.add("hidden");
+    visitorPage.classList.add("hidden");
+    parcelPage.classList.add("hidden");
+    grievancePage.classList.add("hidden");
+    settingsPage.classList.remove("hidden");
+  };
+
+  document.getElementById("purposeVisitBtn").onclick = () => {
+    settingsPage.classList.add("hidden");
+    parcelPage.classList.add("hidden");
+    grievancePage.classList.add("hidden");
+    visitorPage.classList.remove("hidden");
+    renderVisitorTable();
+  };
+
+  document.getElementById("parcelTypeBtn").onclick = () => {
+    settingsPage.classList.add("hidden");
+    visitorPage.classList.add("hidden");
+    grievancePage.classList.add("hidden");
+    parcelPage.classList.remove("hidden");
+    renderParcelTable();
+  };
+
+  document.getElementById("grievanceBtn").onclick = () => {
+    settingsPage.classList.add("hidden");
+    visitorPage.classList.add("hidden");
+    parcelPage.classList.add("hidden");
+    grievancePage.classList.remove("hidden");
+    renderGrievanceTable();
+  };
+
+  document.getElementById("breadcrumbDashboard").onclick = () => {
+    settingsPage.classList.add("hidden");
+    visitorPage.classList.add("hidden");
+    parcelPage.classList.add("hidden");
+    grievancePage.classList.add("hidden");
+    dashboardPage.classList.remove("hidden");
+  };
+
+  document.getElementById("breadcrumbSettings").onclick = () => {
+    dashboardPage.classList.add("hidden");
+    visitorPage.classList.add("hidden");
+    parcelPage.classList.add("hidden");
+    grievancePage.classList.add("hidden");
+    settingsPage.classList.remove("hidden");
+  };
+
+  // ===================  VISITOR MODAL ===================
+  const visitorModal = document.getElementById("new-visitor-modal");
+  const visitorForm = document.getElementById("visitorForm");
+  const visitorBody = document.getElementById("visitorBody");
+  const closeVisitorModalBtn = document.getElementById("close-visitor-modal-btn");
+  const cancelVisitorBtn = document.getElementById("cancelVisitorModal");
+
+  document.getElementById("createVisitorBtn").onclick = () => {
+    editingVisitor = null;
+    visitorForm.reset();
+    visitorModal.classList.remove("hidden");
+  };
+  
+  closeVisitorModalBtn.onclick = () => {
+    visitorModal.classList.add("hidden");
+    visitorForm.reset();
+  };
+  
+  cancelVisitorBtn.onclick = () => {
+    visitorModal.classList.add("hidden");
+    visitorForm.reset();
+  };
+  
+  visitorModal.addEventListener("click", e => {
+    if(e.target === visitorModal) visitorModal.classList.add("hidden");
+  });
+
+  // ===================  VISITOR INFORMATION ===================
+  document.getElementById("visitorInfoBtn").addEventListener("click", () => {
+    if (!lastVisitor) {
+      alert("No visitor information available.");
+    } else {
+      alert("Last Visitor Details:\n\n" + 
+            "ID: " + lastVisitor.id + "\n" +
+            "Purpose: " + lastVisitor.purpose + "\n" +
+            "Name: " + lastVisitor.name + "\n" +
+            "Phone: " + lastVisitor.phone + "\n" +
+            "ID Number: " + lastVisitor.idNumber + "\n" +
+            "ID Attachment: " + lastVisitor.idAttachment + "\n" +
+            "Number of Visitors: " + lastVisitor.visitorCount + "\n" +
+            "Date: " + lastVisitor.date + "\n" +
+            "Status: " + lastVisitor.status);
+    }
+  });
+
+  // ===================  PARCEL MODAL ===================
+  const parcelModal = document.getElementById("new-percel-modal");
+  const parcelForm = document.getElementById("parcelForm");
+  const parcelBody = document.getElementById("parcelBody");
+  const closeParcelModalBtn = document.getElementById("close-parcel-modal-btn");
+  const cancelParcelBtn = document.getElementById("cancelParcelModal");
+
+  document.getElementById("createParcelBtn").onclick = () => {
+    editingParcel = null;
+    parcelForm.reset();
+    parcelModal.classList.remove("hidden");
+  };
+  
+  closeParcelModalBtn.onclick = () => {
+    parcelModal.classList.add("hidden");
+    parcelForm.reset();
+  };
+  
+  cancelParcelBtn.onclick = () => {
+    parcelModal.classList.add("hidden");
+    parcelForm.reset();
+  };
+  
+  parcelModal.addEventListener("click", e => {
+    if(e.target === parcelModal) parcelModal.classList.add("hidden");
+  });
+
+  // ===================  GRIEVANCE MODAL ===================
+  const grievanceModal = document.getElementById("new-grievance-modal");
+  const grievanceForm = document.getElementById("grievanceForm");
+  const grievanceBody = document.getElementById("grievanceBody");
+  const closeGrievanceModalBtn = document.getElementById("close-grievance-modal-btn");
+  const cancelGrievanceBtn = document.getElementById("cancelGrievanceModal");
+
+  document.getElementById("createGrievanceBtn").onclick = () => {
+    editingGrievance = null;
+    grievanceForm.reset();
+    grievanceModal.classList.remove("hidden");
+  };
+  
+  closeGrievanceModalBtn.onclick = () => {
+    grievanceModal.classList.add("hidden");
+    grievanceForm.reset();
+  };
+  
+  cancelGrievanceBtn.onclick = () => {
+    grievanceModal.classList.add("hidden");
+    grievanceForm.reset();
+  };
+  
+  grievanceModal.addEventListener("click", e => {
+    if(e.target === grievanceModal) grievanceModal.classList.add("hidden");
+  });
+
+  // ===================  PAGINATION ===================
+  let currentVisitorPage = 1;
+  let currentParcelPage = 1;
+  let currentGrievancePage = 1;
+  const rowsPerPage = 10;
+
+  function renderVisitorTable() {
+    const searchQuery = document.getElementById("searchVisitorInput").value.toLowerCase();
+    
+    // Filter data based on search
+    const filteredData = visitorData.filter(item => {
+      const searchString = Object.values(item).join(" ").toLowerCase();
+      return searchString.includes(searchQuery);
+    });
+
+    const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+    if (currentVisitorPage > totalPages) currentVisitorPage = totalPages || 1;
+
+    // Clear table body
+    visitorBody.innerHTML = "";
+
+    // Calculate start and end index for current page
+    const start = (currentVisitorPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const currentPageData = filteredData.slice(start, end);
+
+    // Populate table with current page data
+    currentPageData.forEach(item => {
+      const tr = document.createElement("tr");
+      tr.className = "border-b border-gray-200";
+      if (item === lastVisitor) {
+        tr.classList.add("bg-blue-100");
+      }
+      
+      const statusClass = item.status === 'Active' ? 'status-delivered' : 'status-cancelled';
+      
+      tr.innerHTML = `
+        <td class="py-3 px-4 text-center">${item.id}</td>
+        <td class="py-3 px-4 text-center">${item.purpose}</td>
+        <td class="py-3 px-4 text-center">${item.name}</td>
+        <td class="py-3 px-4 text-center">${item.phone}</td>
+        <td class="py-3 px-4 text-center">${item.date}</td>
+        <td class="py-3 px-4 text-center">
+          <span class="${statusClass} px-2 py-1 rounded-full text-xs font-semibold">${item.status}</span>
+        </td>
+        <td class="py-3 px-4 text-center flex justify-center space-x-2">
+          <button class="bg-blue-900 text-white p-2 rounded-lg hover:bg-blue-800 transition-colors view-visitor-btn" data-id="${item.id}"><i class="fas fa-eye"></i></button>
+          <button class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-400 transition-colors edit-visitor-btn" data-id="${item.id}"><i class="fas fa-pencil-alt"></i></button>
+          <button class="btn btn-danger text-white p-2 rounded-lg hover:bg-red-400 transition-colors delete-visitor-btn" data-id="${item.id}"><i class="fas fa-trash"></i></button>
+        </td>`;
+      visitorBody.appendChild(tr);
+    });
+
+    // Render page numbers
+    const pageNumbers = document.getElementById("visitorPageNumbers");
+    pageNumbers.innerHTML = "";
+    for(let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement("button");
+      btn.innerText = i;
+      btn.className = `px-3 py-1 rounded ${i === currentVisitorPage ? 'bg-blue-900 text-white' : 'bg-gray-300 hover:bg-gray-400'}`;
+      btn.onclick = () => { 
+        currentVisitorPage = i; 
+        renderVisitorTable(); 
+      };
+      pageNumbers.appendChild(btn);
+    }
+
+    // Update pagination button states
+    document.getElementById("prevVisitorPage").disabled = currentVisitorPage === 1;
+    document.getElementById("nextVisitorPage").disabled = currentVisitorPage === totalPages || totalPages === 0;
+  }
+
+  function renderParcelTable() {
+    const searchQuery = document.getElementById("searchParcelInput").value.toLowerCase();
+    
+    // Filter data based on search
+    const filteredData = parcelData.filter(item => {
+      const searchString = Object.values(item).join(" ").toLowerCase();
+      return searchString.includes(searchQuery);
+    });
+
+    const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+    if (currentParcelPage > totalPages) currentParcelPage = totalPages || 1;
+
+    // Clear table body
+    parcelBody.innerHTML = "";
+
+    // Calculate start and end index for current page
+    const start = (currentParcelPage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const currentPageData = filteredData.slice(start, end);
+
+    // Populate table with current page data
+    currentPageData.forEach(item => {
+      const tr = document.createElement("tr");
+      tr.className = "border-b border-gray-200";
+      tr.innerHTML = `
+        <td class="py-3 px-4 text-center">${item.id}</td>
+        <td class="py-3 px-4 text-center">${item.title}</td>
+        <td class="py-3 px-4 text-center">${item.category}</td>
+        <td class="py-3 px-4 text-center">${item.type}</td>
+        <td class="py-3 px-4 text-center">${item.sender}</td>
+        <td class="py-3 px-4 text-center">${item.contact}</td>
+        <td class="py-3 px-4 text-center">${item.date}</td>
+        <td class="py-3 px-4 text-center">
+          <span class="${getStatusClass(item.status)} px-2 py-1 rounded-full text-xs font-semibold">${item.status}</span>
+        </td>
+        <td class="py-3 px-4 text-center flex justify-center space-x-2">
+          <button class="bg-blue-900 text-white p-2 rounded-lg hover:bg-blue-800 transition-colors view-parcel-btn" data-id="${item.id}"><i class="fas fa-eye"></i></button>
+          <button class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-400 transition-colors edit-parcel-btn" data-id="${item.id}"><i class="fas fa-pencil-alt"></i></button>
+          <button class="btn btn-danger text-white p-2 rounded-lg hover:bg-red-400 transition-colors delete-parcel-btn" data-id="${item.id}"><i class="fas fa-trash"></i></button>
+        </td>`;
+      parcelBody.appendChild(tr);
+    });
+
+    // Render page numbers
+    const pageNumbers = document.getElementById("parcelPageNumbers");
+    pageNumbers.innerHTML = "";
+    for(let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement("button");
+      btn.innerText = i;
+      btn.className = `px-3 py-1 rounded ${i === currentParcelPage ? 'bg-blue-900 text-white' : 'bg-gray-300 hover:bg-gray-400'}`;
+      btn.onclick = () => { 
+        currentParcelPage = i; 
+        renderParcelTable(); 
+      };
+      pageNumbers.appendChild(btn);
+    }
+
+    // Update pagination button states
+    document.getElementById("prevParcelPage").disabled = currentParcelPage === 1;
+    document.getElementById("nextParcelPage").disabled = currentParcelPage === totalPages || totalPages === 0;
+  }
+
+  function renderGrievanceTable() {
+    const searchQuery = document.getElementById("searchGrievanceInput").value.toLowerCase();
+    
+    // Filter data based on search
+    const filteredData = grievanceData.filter(item => {
+      const searchString = Object.values(item).join(" ").toLowerCase();
+      return searchString.includes(searchQuery);
+    });
+
+    const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+    if (currentGrievancePage > totalPages) currentGrievancePage = totalPages || 1;
+
+    // Clear table body
+    grievanceBody.innerHTML = "";
+
+    // Calculate start and end index for current page
+    const start = (currentGrievancePage - 1) * rowsPerPage;
+    const end = start + rowsPerPage;
+    const currentPageData = filteredData.slice(start, end);
+
+    // Populate table with current page data
+    currentPageData.forEach(item => {
+      const tr = document.createElement("tr");
+      tr.className = "border-b border-gray-200";
+      tr.innerHTML = `
+        <td class="py-3 px-4 text-center">${item.id}</td>
+        <td class="py-3 px-4 text-center">${item.title}</td>
+        <td class="py-3 px-4 text-center">${item.category}</td>
+        <td class="py-3 px-4 text-center">${item.type}</td>
+        <td class="py-3 px-4 text-center">${item.raisedBy} (${item.contact})</td>
+        <td class="py-3 px-4 text-center">${item.date}</td>
+        <td class="py-3 px-4 text-center">
+          <span class="${getStatusClass(item.status)} px-2 py-1 rounded-full text-xs font-semibold">${item.status}</span>
+        </td>
+        <td class="py-3 px-4 text-center flex justify-center space-x-2">
+          <button class="bg-blue-900 text-white p-2 rounded-lg hover:bg-blue-800 transition-colors view-grievance-btn" data-id="${item.id}"><i class="fas fa-eye"></i></button>
+          <button class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-400 transition-colors edit-grievance-btn" data-id="${item.id}"><i class="fas fa-pencil-alt"></i></button>
+          <button class="btn btn-danger text-white p-2 rounded-lg hover:bg-red-400 transition-colors delete-grievance-btn" data-id="${item.id}"><i class="fas fa-trash"></i></button>
+        </td>`;
+      grievanceBody.appendChild(tr);
+    });
+
+    // Render page numbers
+    const pageNumbers = document.getElementById("grievancePageNumbers");
+    pageNumbers.innerHTML = "";
+    for(let i = 1; i <= totalPages; i++) {
+      const btn = document.createElement("button");
+      btn.innerText = i;
+      btn.className = `px-3 py-1 rounded ${i === currentGrievancePage ? 'bg-blue-900 text-white' : 'bg-gray-300 hover:bg-gray-400'}`;
+      btn.onclick = () => { 
+        currentGrievancePage = i; 
+        renderGrievanceTable(); 
+      };
+      pageNumbers.appendChild(btn);
+    }
+
+    // Update pagination button states
+    document.getElementById("prevGrievancePage").disabled = currentGrievancePage === 1;
+    document.getElementById("nextGrievancePage").disabled = currentGrievancePage === totalPages || totalPages === 0;
+  }
+
+  document.getElementById("prevVisitorPage").onclick = () => { 
+    if(currentVisitorPage > 1) { 
+      currentVisitorPage--; 
+      renderVisitorTable(); 
+    } 
+  };
+  
+  document.getElementById("nextVisitorPage").onclick = () => {
+    const searchQuery = document.getElementById("searchVisitorInput").value.toLowerCase();
+    const filteredData = visitorData.filter(item => {
+      const searchString = Object.values(item).join(" ").toLowerCase();
+      return searchString.includes(searchQuery);
+    });
+    const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+    
+    if(currentVisitorPage < totalPages) { 
+      currentVisitorPage++; 
+      renderVisitorTable(); 
+    }
+  };
+
+  document.getElementById("prevParcelPage").onclick = () => { 
+    if(currentParcelPage > 1) { 
+      currentParcelPage--; 
+      renderParcelTable(); 
+    } 
+  };
+  
+  document.getElementById("nextParcelPage").onclick = () => {
+    const searchQuery = document.getElementById("searchParcelInput").value.toLowerCase();
+    const filteredData = parcelData.filter(item => {
+      const searchString = Object.values(item).join(" ").toLowerCase();
+      return searchString.includes(searchQuery);
+    });
+    const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+    
+    if(currentParcelPage < totalPages) { 
+      currentParcelPage++; 
+      renderParcelTable(); 
+    }
+  };
+
+  document.getElementById("prevGrievancePage").onclick = () => { 
+    if(currentGrievancePage > 1) { 
+      currentGrievancePage--; 
+      renderGrievanceTable(); 
+    } 
+  };
+  
+  document.getElementById("nextGrievancePage").onclick = () => {
+    const searchQuery = document.getElementById("searchGrievanceInput").value.toLowerCase();
+    const filteredData = grievanceData.filter(item => {
+      const searchString = Object.values(item).join(" ").toLowerCase();
+      return searchString.includes(searchQuery);
+    });
+    const totalPages = Math.ceil(filteredData.length / rowsPerPage);
+    
+    if(currentGrievancePage < totalPages) { 
+      currentGrievancePage++; 
+      renderGrievanceTable(); 
+    }
+  };
+
+  // ===================  SEARCH FUNCTIONALITY ===================
+  document.getElementById("searchVisitorInput").addEventListener("input", () => {
+    currentVisitorPage = 1;
+    renderVisitorTable();
+  });
+
+  document.getElementById("searchParcelInput").addEventListener("input", () => {
+    currentParcelPage = 1;
+    renderParcelTable();
+  });
+
+  document.getElementById("searchGrievanceInput").addEventListener("input", () => {
+    currentGrievancePage = 1;
+    renderGrievanceTable();
+  });
+
+  // ===================  HELPER FUNCTIONS ===================
+  function getStatusClass(status) {
+    if(status === "Delivered" || status === "Resolved" || status === "Closed") return "status-delivered";
+    if(status === "In Transit" || status === "In Progress") return "status-transit";
+    if(status === "Cancelled") return "status-cancelled";
+    if(status === "Pending" || status === "Open") return "status-pending";
+    return "status-pending";
+  }
+
+  function getNextVisitorId() {
+    return visitorData.length > 0 ? Math.max(...visitorData.map(item => item.id)) + 1 : 1;
+  }
+
+  function getNextParcelId() {
+    return parcelData.length > 0 ? Math.max(...parcelData.map(item => item.id)) + 1 : 1;
+  }
+
+  function getNextGrievanceId() {
+    return grievanceData.length > 0 ? Math.max(...grievanceData.map(item => item.id)) + 1 : 1;
+  }
+
+  // ===================  ADD / EDIT ROW ===================
+  let editingVisitor = null;
+  let editingParcel = null;
+  let editingGrievance = null;
+
+  visitorForm.onsubmit = e => {
+    e.preventDefault();
+    const formData = {
+      id: editingVisitor ? editingVisitor.id : getNextVisitorId(),
+      purpose: document.getElementById("modalPurpose").value,
+      name: document.getElementById("modalName").value,
+      phone: document.getElementById("modalPhone").value,
+      idNumber: document.getElementById("modalIdNumber").value,
+      idAttachment: document.getElementById("modalIdAttachment").files[0]?.name || "No file chosen",
+      visitorCount: document.getElementById("modalVisitorCount").value,
+      date: new Date().toLocaleDateString(),
+      status: "Active"
+    };
+
+    if(editingVisitor) {
+      // Update existing item
+      const index = visitorData.findIndex(item => item.id === editingVisitor.id);
+      if (index !== -1) {
+        visitorData[index] = formData;
+      }
+    } else {
+      // Add new item
+      visitorData.push(formData);
+    }
+
+    lastVisitor = formData;
+    
+    // Save data and refresh table
+    saveVisitorData(visitorData);
+    visitorModal.classList.add("hidden");
+    visitorForm.reset();
+    renderVisitorTable();
+  };
+
+  parcelForm.onsubmit = e => {
+    e.preventDefault();
+    const formData = {
+      id: editingParcel ? editingParcel.id : getNextParcelId(),
+      title: document.getElementById("modalParcelTitle").value,
+      category: document.getElementById("modalParcelCategory").value,
+      type: document.getElementById("modalParcelType").value,
+      sender: document.getElementById("modalSenderReceiver").value,
+      contact: document.getElementById("modalParcelPhone").value,
+      date: document.getElementById("modalParcelDate").value,
+      status: document.getElementById("modalParcelStatus").value
+    };
+
+    if(editingParcel) {
+      // Update existing item
+      const index = parcelData.findIndex(item => item.id === editingParcel.id);
+      if (index !== -1) {
+        parcelData[index] = formData;
+      }
+    } else {
+      // Add new item
+      parcelData.push(formData);
+    }
+
+    // Save data and refresh table
+    saveParcelData(parcelData);
+    parcelModal.classList.add("hidden");
+    parcelForm.reset();
+    renderParcelTable();
+  };
+
+  grievanceForm.onsubmit = e => {
+    e.preventDefault();
+    const formData = {
+      id: editingGrievance ? editingGrievance.id : getNextGrievanceId(),
+      title: document.getElementById("modalGrievanceTitle").value,
+      category: document.getElementById("modalGrievanceCategory").value,
+      type: document.getElementById("modalGrievanceType").value,
+      raisedBy: document.getElementById("modalRaisedBy").value,
+      contact: document.getElementById("modalGrievanceContact").value,
+      date: document.getElementById("modalGrievanceDate").value,
+      status: document.getElementById("modalGrievanceStatus").value,
+      description: document.getElementById("modalGrievanceDescription").value
+    };
+
+    if(editingGrievance) {
+      // Update existing item
+      const index = grievanceData.findIndex(item => item.id === editingGrievance.id);
+      if (index !== -1) {
+        grievanceData[index] = formData;
+      }
+    } else {
+      // Add new item
+      grievanceData.push(formData);
+    }
+
+    // Save data and refresh table
+    saveGrievanceData(grievanceData);
+    grievanceModal.classList.add("hidden");
+    grievanceForm.reset();
+    renderGrievanceTable();
+  };
+
+  // ===================  DELEGATED BUTTONS ===================
+  visitorBody.addEventListener("click", e => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    
+    const id = parseInt(btn.getAttribute("data-id"));
+    const item = visitorData.find(item => item.id === id);
+    
+    if(!item) return;
+
+    // DELETE
+    if(btn.classList.contains("delete-visitor-btn")) { 
+      if(confirm("Are you sure you want to delete this visitor record?")) {
+        visitorData = visitorData.filter(i => i.id !== id);
+        if (lastVisitor && lastVisitor.id === id) {
+          lastVisitor = null;
+        }
+        saveVisitorData(visitorData);
+        renderVisitorTable();
+      }
+    }
+
+    // EDIT
+    if(btn.classList.contains("edit-visitor-btn")) {
+      editingVisitor = item;
+      document.getElementById("modalPurpose").value = item.purpose;
+      document.getElementById("modalName").value = item.name;
+      document.getElementById("modalPhone").value = item.phone;
+      document.getElementById("modalIdNumber").value = item.idNumber;
+      document.getElementById("modalVisitorCount").value = item.visitorCount;
+      visitorModal.classList.remove("hidden");
+    }
+
+    // VIEW
+    if(btn.classList.contains("view-visitor-btn")) {
+      alert("Visitor Details:\n\n" + 
+            "ID: " + item.id + "\n" +
+            "Purpose: " + item.purpose + "\n" +
+            "Name: " + item.name + "\n" +
+            "Phone: " + item.phone + "\n" +
+            "ID Number: " + item.idNumber + "\n" +
+            "ID Attachment: " + item.idAttachment + "\n" +
+            "Number of Visitors: " + item.visitorCount + "\n" +
+            "Date: " + item.date + "\n" +
+            "Status: " + item.status);
+    }
+  });
+
+  parcelBody.addEventListener("click", e => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    
+    const id = parseInt(btn.getAttribute("data-id"));
+    const item = parcelData.find(item => item.id === id);
+    
+    if(!item) return;
+
+    // DELETE
+    if(btn.classList.contains("delete-parcel-btn")) { 
+      if(confirm("Are you sure you want to delete this parcel?")) {
+        parcelData = parcelData.filter(i => i.id !== id);
+        saveParcelData(parcelData);
+        renderParcelTable();
+      }
+    }
+
+    // EDIT
+    if(btn.classList.contains("edit-parcel-btn")) {
+      editingParcel = item;
+      document.getElementById("modalParcelTitle").value = item.title;
+      document.getElementById("modalParcelCategory").value = item.category;
+      document.getElementById("modalParcelType").value = item.type;
+      document.getElementById("modalSenderReceiver").value = item.sender;
+      document.getElementById("modalParcelPhone").value = item.contact;
+      document.getElementById("modalParcelDate").value = item.date;
+      document.getElementById("modalParcelStatus").value = item.status;
+      parcelModal.classList.remove("hidden");
+    }
+
+    // VIEW
+    if(btn.classList.contains("view-parcel-btn")) {
+      alert("Parcel Details:\n\n" + 
+            "ID: " + item.id + "\n" +
+            "Title: " + item.title + "\n" +
+            "Category: " + item.category + "\n" +
+            "Type: " + item.type + "\n" +
+            "Sender/Receiver: " + item.sender + "\n" +
+            "Contact: " + item.contact + "\n" +
+            "Date: " + item.date + "\n" +
+            "Status: " + item.status);
+    }
+  });
+
+  grievanceBody.addEventListener("click", e => {
+    const btn = e.target.closest("button");
+    if (!btn) return;
+    
+    const id = parseInt(btn.getAttribute("data-id"));
+    const item = grievanceData.find(item => item.id === id);
+    
+    if(!item) return;
+
+    // DELETE
+    if(btn.classList.contains("delete-grievance-btn")) { 
+      if(confirm("Are you sure you want to delete this grievance?")) {
+        grievanceData = grievanceData.filter(i => i.id !== id);
+        saveGrievanceData(grievanceData);
+        renderGrievanceTable();
+      }
+    }
+
+    // EDIT
+    if(btn.classList.contains("edit-grievance-btn")) {
+      editingGrievance = item;
+      document.getElementById("modalGrievanceTitle").value = item.title;
+      document.getElementById("modalGrievanceCategory").value = item.category;
+      document.getElementById("modalGrievanceType").value = item.type;
+      document.getElementById("modalRaisedBy").value = item.raisedBy;
+      document.getElementById("modalGrievanceContact").value = item.contact;
+      document.getElementById("modalGrievanceDate").value = item.date;
+      document.getElementById("modalGrievanceStatus").value = item.status;
+      document.getElementById("modalGrievanceDescription").value = item.description;
+      grievanceModal.classList.remove("hidden");
+    }
+
+    // VIEW
+    if(btn.classList.contains("view-grievance-btn")) {
+      alert("Grievance Details:\n\n" + 
+            "ID: " + item.id + "\n" +
+            "Title: " + item.title + "\n" +
+            "Category: " + item.category + "\n" +
+            "Type: " + item.type + "\n" +
+            "Raised By: " + item.raisedBy + "\n" +
+            "Contact: " + item.contact + "\n" +
+            "Date: " + item.date + "\n" +
+            "Status: " + item.status + "\n" +
+            "Description: " + item.description);
+    }
+  });
+
+  // ===================  CSV EXPORT ===================
+  document.getElementById("exportVisitorBtn").addEventListener("click", () => {
+    let csv = "ID,Purpose,Name,Phone,ID Number,ID Attachment,Visitor Count,Date,Status\n";
+    visitorData.forEach(item => {
+      csv += `${item.id},"${item.purpose}","${item.name}","${item.phone}","${item.idNumber}","${item.idAttachment}","${item.visitorCount}","${item.date}","${item.status}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "visitors.csv";
+    a.click();
+  });
+
+  document.getElementById("exportParcelBtn").addEventListener("click", () => {
+    // CSV header
+    let csv = "ID,Title,Category,Type,Sender/Receiver,Contact,Date,Status\n";
+
+    // Generate CSV rows
+    parcelData.forEach(item => {
+        csv += `${item.id},"${item.title}","${item.category}","${item.type}","${item.sender}","${item.contact}","${item.date}","${item.status}"\n`;
+    });
+
+    // Create blob and download
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "parcels.csv";
+    a.click();
+});
+
+
+  document.getElementById("exportGrievanceBtn").addEventListener("click", () => {
+    let csv = "ID,Title,Category,Type,Raised By,Contact,Date,Status,Description\n";
+    grievanceData.forEach(item => {
+      csv += `${item.id},"${item.title}","${item.category}","${item.type}","${item.raisedBy}","${item.contact}","${item.date}","${item.status}","${item.description}"\n`;
+    });
+    
+    const blob = new Blob([csv], { type: "text/csv" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "grievances.csv";
+    a.click();
+  });
+
+  // ===================  CSV IMPORT ===================
+  document.getElementById("importVisitorBtn").addEventListener("click", () => {
+    document.getElementById("importVisitorFile").click();
+  });
+  
+  document.getElementById("importVisitorFile").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = evt => {
+      const lines = evt.target.result.split("\n");
+      const newData = [];
+      
+      lines.forEach((line, index) => {
+        if(!line.trim() || index === 0) return; // Skip header and empty lines
+        
+        const values = line.split(",").map(v => v.replace(/"/g, "").trim());
+        if(values.length >= 9) {
+          newData.push({
+            id: parseInt(values[0]) || getNextVisitorId(),
+            purpose: values[1],
+            name: values[2],
+            phone: values[3],
+            idNumber: values[4],
+            idAttachment: values[5],
+            visitorCount: values[6],
+            date: values[7],
+            status: values[8]
+          });
+        }
+      });
+      
+      // Add new data to existing data
+      visitorData = [...visitorData, ...newData];
+      saveVisitorData(visitorData);
+      renderVisitorTable();
+      alert("Import completed successfully!");
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById("importParcelBtn").addEventListener("click", () => {
+    document.getElementById("importParcelFile").click();
+  });
+  
+  document.getElementById("importParcelFile").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = evt => {
+      const lines = evt.target.result.split("\n");
+      const newData = [];
+      
+      lines.forEach((line, index) => {
+        if(!line.trim() || index === 0) return; // Skip header and empty lines
+        
+        const values = line.split(",").map(v => v.replace(/"/g, "").trim());
+        if(values.length >= 8) {
+          newData.push({
+            id: parseInt(values[0]) || getNextParcelId(),
+            title: values[1],
+            category: values[2],
+            type: values[3],
+            sender: values[4],
+            contact: values[5],
+            date: values[6],
+            status: values[7]
+          });
+        }
+      });
+      
+      // Add new data to existing data
+      parcelData = [...parcelData, ...newData];
+      saveParcelData(parcelData);
+      renderParcelTable();
+      alert("Import completed successfully!");
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById("importGrievanceBtn").addEventListener("click", () => {
+    document.getElementById("importGrievanceFile").click();
+  });
+  
+  document.getElementById("importGrievanceFile").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = evt => {
+      const lines = evt.target.result.split("\n");
+      const newData = [];
+      
+      lines.forEach((line, index) => {
+        if(!line.trim() || index === 0) return; // Skip header and empty lines
+        
+        const values = line.split(",").map(v => v.replace(/"/g, "").trim());
+        if(values.length >= 9) {
+          newData.push({
+            id: parseInt(values[0]) || getNextGrievanceId(),
+            title: values[1],
+            category: values[2],
+            type: values[3],
+            raisedBy: values[4],
+            contact: values[5],
+            date: values[6],
+            status: values[7],
+            description: values[8]
+          });
+        }
+      });
+      
+      // Add new data to existing data
+      grievanceData = [...grievanceData, ...newData];
+      saveGrievanceData(grievanceData);
+      renderGrievanceTable();
+      alert("Import completed successfully!");
+    };
+    reader.readAsText(file);
+  });
+
+  // =================== PROFILE DROPDOWN ===================
+  function toggleProfileDropdown() {
+    document.getElementById("profileDropdown").classList.toggle("show");
+  }
+
+  // Close the dropdown if the user clicks outside of it
+  window.onclick = function(event) {
+    if (!event.target.matches('.profile')) {
+      const dropdown = document.getElementById("profileDropdown");
+      if (dropdown.classList.contains('show')) {
+        dropdown.classList.remove('show');
+      }
+    }
+  }
+
+  // ===================  LOGOUT FUNCTION ===================
+  function logout() {
+    // Hide main wrapper and show login page
+    document.getElementById("main-wrapper").classList.add("hidden");
+    document.getElementById("login-page").classList.remove("hidden");
+    
+    // Close profile dropdown
+    document.getElementById("profileDropdown").classList.remove("show");
+    
+    // Clear login form
+    document.getElementById("loginForm").reset();
+  }
+
+  /// ================== Global Search ==================
+document.getElementById('globalSearch').addEventListener('input', (e)=> {
+  const q = e.target.value.trim().toLowerCase();
+
+  if (visitorPage && !visitorPage.classList.contains('hidden')) {
+    document.getElementById('searchVisitorInput').value = q;
+    renderVisitorTable();
+  } 
+  else if (parcelPage && !parcelPage.classList.contains('hidden')) {
+    document.getElementById('searchParcelInput').value = q;
+    renderParcelTable();
+  } 
+  else if (grievancePage && !grievancePage.classList.contains('hidden')) {
+    document.getElementById('searchGrievanceInput').value = q;
+    renderGrievanceTable();
+  } 
+  else {
+    if (q.length > 2) {
+      alert("Searching dashboard/settings for: " + q);
+    }
+  }
+});
+
+
+  // ===================  FULLSCREEN TOGGLE ===================
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else if (document.exitFullscreen) {
+      document.exitFullscreen();
+    }
+  }
+
+  // ===================  DARK MODE TOGGLE ===================
+  function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+  }
+</script>
+</body>
+</html>
